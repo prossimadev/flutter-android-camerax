@@ -21,7 +21,11 @@ flutter:
         default_package: camera_web
 
 dependencies:
-  camera_android_camerax: ^0.6.13
+  camera_android_camerax:
+      git:
+        url: https://github.com/prossimadev/flutter-android-camerax.git
+        path: camera_android_camerax
+        ref: main
   camera_avfoundation: ^0.9.18
   camera_platform_interface: ^2.9.0
   camera_web: ^0.3.3
