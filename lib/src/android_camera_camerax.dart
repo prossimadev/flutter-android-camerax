@@ -969,46 +969,6 @@ class AndroidCameraCameraX extends CameraPlatform {
     }
 
     dynamic Function(CameraImageData)? streamCallback = options.streamCallback;
-    if (!_previewIsPaused) {
-      // The plugin binds the preview use case to the camera lifecycle when
-      // createCamera is called, but camera use cases can become limited
-      // when video recording and displaying a preview concurrently. This logic
-      // will prioritize attempting to continue displaying the preview,
-      // stream images, and record video if specified and supported. Otherwise,
-      // the preview must be paused in order to allow those concurrently. See
-      // https://developer.android.com/media/camera/camerax/architecture#combine-use-cases
-      // for more information on supported concurrent camera use cases.
-      final Camera2CameraInfo camera2CameraInfo =
-          await proxy.getCamera2CameraInfo(cameraInfo!);
-      final int cameraInfoSupportedHardwareLevel =
-          await camera2CameraInfo.getSupportedHardwareLevel();
-
-      // Handle limited level device restrictions:
-      final bool cameraSupportsConcurrentImageCapture =
-          cameraInfoSupportedHardwareLevel !=
-              CameraMetadata.infoSupportedHardwareLevelLegacy;
-      if (!cameraSupportsConcurrentImageCapture) {
-        // Concurrent preview + video recording + image capture is not supported
-        // unless the camera device is cameraSupportsHardwareLevelLimited or
-        // better.
-        await _unbindUseCaseFromLifecycle(imageCapture!);
-      }
-
-      // Handle level 3 device restrictions:
-      final bool cameraSupportsHardwareLevel3 =
-          cameraInfoSupportedHardwareLevel ==
-              CameraMetadata.infoSupportedHardwareLevel3;
-      if (!cameraSupportsHardwareLevel3 || streamCallback == null) {
-        // Concurrent preview + video recording + image streaming is not supported
-        // unless the camera device is cameraSupportsHardwareLevel3 or better.
-        streamCallback = null;
-        await _unbindUseCaseFromLifecycle(imageAnalysis!);
-      } else {
-        // If image streaming concurrently with video recording, image capture
-        // is unsupported.
-        await _unbindUseCaseFromLifecycle(imageCapture!);
-      }
-    }
 
     await _bindUseCaseToLifecycle(videoCapture!, options.cameraId);
 
